@@ -6,12 +6,15 @@
 
 #define TILEMAP_SIZE_X 16
 #define TILEMAP_SIZE_Y 12
+
 // How wide and tall is each tile in pixels
 #define TILE_PIXELS 16
+
 // What happens when we get out of grid horizontally
 #define OUTSIDE_TILE_HORIZONTAL TILE_FULL
 // What happens when we get out of grid vertically
 #define OUTSIDE_TILE_VERTICAL TILE_EMPTY
+
 // How much should the box in `resolveBoxCollisionWithTilemap` bounce of off walls.
 // Mainly player uses this to bounce.
 #define BOUNCE_FACTOR_X 0.45f
@@ -25,23 +28,27 @@
 
 // Half-size of the player's box collider.
 #define PLAYER_SIZE Vector2{0.3f, 0.4f}
+
 // Gravity in units (tiles) per second
 #define PLAYER_GRAVITY 30.0f
+
 // How fast player accelerates.
 #define PLAYER_SPEED 200.0f
 #define PLAYER_GROUND_FRICTION_X 70.0f
 #define PLAYER_JUMP_STRENGTH 15.0f
 
-struct Player {
+typedef struct  {
     Vector2 position;
     Vector2 velocity;
     float jumpHoldTime;
     float animTime;
     bool isOnGround;
     bool isFacingRight;
-};
+} Player;
 
-enum Tile { TILE_EMPTY = ' ', TILE_ZERO = '\0', TILE_FULL = '#' };
+Player player = {};
+
+typedef enum { TILE_EMPTY = ' ', TILE_ZERO = '\0', TILE_FULL = '#' } Tile;
 
 // Tilemap is a grid of tiles (`Tile` enums, stored as unsigned bytes).
 // The '+ 1' is there for string null-termination, because
@@ -155,6 +162,10 @@ const Tilemap screenTilemaps[] = {
     },
 };
 
+Sound jumpWav;
+Sound bumpWav;
+Sound floorWav;
+
 // Get the screen index, where start = 0 and increases when you move up (-Y)
 int getScreenHeightIndex(float height) {
     return floorf(-height / TILEMAP_SIZE_Y);
@@ -162,10 +173,10 @@ int getScreenHeightIndex(float height) {
 
 // Get start and end coordinates of the boxes a bounding box on the tilemap grid
 void getTilesOverlappedByBox(int* outStartX, int* outStartY, int* outEndX, int* outEndY, Vector2 center, const Vector2 size) {
-    *outStartX = int(floorf(center.x - size.x));
-    *outStartY = int(floorf(center.y - size.y));
-    *outEndX = int(floorf(center.x + size.x));
-    *outEndY = int(floorf(center.y + size.y));
+    *outStartX = (int)floorf(center.x - size.x);
+    *outStartY = (int)floorf(center.y - size.y);
+    *outEndX = (int)floorf(center.x + size.x);
+    *outEndY = (int)floorf(center.y + size.y);
 }
 
 // This function takes a box and a tilemap, and tries to make sure the box
@@ -197,7 +208,7 @@ void resolveBoxCollisionWithTilemap(const Tilemap* tilemap, float tilemapHeight,
 
             // Center of the tile box
             const Vector2 boxPos = { 0.5f + (float)x, 0.5f + (float)y };
-            const Vector2 sizeSum = { size.x + 0.5f, size.y + 0.5 };
+            const Vector2 sizeSum = { size.x + 0.5f, size.y + (float)0.5 };
             const Vector2 surfDist = {
                 fabsf(center->x - boxPos.x) - sizeSum.x,
                 fabsf(center->y - boxPos.y) - sizeSum.y,
@@ -227,6 +238,10 @@ void resolveBoxCollisionWithTilemap(const Tilemap* tilemap, float tilemapHeight,
             if (isXEmpty && isYEmpty) {
                 isClipAxisX = surfDist.x > surfDist.y;
             }
+            
+            if (!player.isOnGround) {
+              PlaySound(bumpWav);
+            }
 
             // Clip the velocity (or bounce) based on the axis
             if (isClipAxisX) {
@@ -254,6 +269,7 @@ void resolveBoxCollisionWithTilemap(const Tilemap* tilemap, float tilemapHeight,
                     velocity->y = fminf(velocity->y, 0.0f);
                 }
             }
+            
         } // y
     } // x
 
@@ -284,7 +300,7 @@ bool isBoxCollidingWithTilemap(const Tilemap* tilemap, float tilemapHeight, Vect
 
             // Center of the tile box
             const Vector2 boxPos = { 0.5f + (float)x, 0.5f + (float)y };
-            const Vector2 sizeSum = { size.x + 0.5f, size.y + 0.5 };
+            const Vector2 sizeSum = { size.x + 0.5f, size.y + 0.5f };
             const Vector2 surfDist = {
                 fabsf(center.x - boxPos.x) - sizeSum.x,
                 fabsf(center.y - boxPos.y) - sizeSum.y,
@@ -301,24 +317,29 @@ bool isBoxCollidingWithTilemap(const Tilemap* tilemap, float tilemapHeight, Vect
     return false;
 }
 
-// Read inputs and update player movement
-void updatePlayer(Player* player, const Tilemap* tilemap, float tilemapHeight, float delta) {
-    player->velocity.y += PLAYER_GRAVITY * delta;
-    const bool isOnGround = isBoxCollidingWithTilemap(
-        tilemap,
-        tilemapHeight,
-        { player->position.x, player->position.y + PLAYER_SIZE.y },
-        { 0.1, 0.05 });
 
-    player->isOnGround = isOnGround;
+// Read inputs and update player movement
+void updatePlayer(const Tilemap* tilemap, float tilemapHeight, float delta) {
+    player.velocity.y += PLAYER_GRAVITY * delta;
+
+    Vector2 center = { player.position.x, player.position.y + PLAYER_SIZE.y };
+    Vector2 size = { 0.1, 0.05 };
+    const bool isOnGround = isBoxCollidingWithTilemap(tilemap, tilemapHeight, center, size);
+        // { player->position.x, player->position.y + PLAYER_SIZE.y },
+        // { 0.1, 0.05 });
+    if (isOnGround && !player.isOnGround) {
+      PlaySound(floorWav);
+    }
+    player.isOnGround = isOnGround;
 
     if (isOnGround) {
-        player->velocity.x = 0;
+        player.velocity.x = 0;
 
         if (IsKeyReleased(KEY_SPACE)) {
+          PlaySound(jumpWav);
             // Calculate strength based on how long the user held down the jump key.
             // The numbers are kind of random, you play with it yourself.
-            const float jumpStrength = Clamp(player->jumpHoldTime * 2.6f, 1.1f, 2.0f) / 2.0f;
+            const float jumpStrength = Clamp(player.jumpHoldTime * 2.6f, 1.1f, 2.0f) / 2.0f;
 
             // If the player doesn't press anything, the direction is up.
             Vector2 dir = { 0.0f, -1.0f };
@@ -331,38 +352,38 @@ void updatePlayer(Player* player, const Tilemap* tilemap, float tilemapHeight, f
             // Multiply the vector length by the strength factor.
             dir = Vector2Scale(dir, jumpStrength * PLAYER_JUMP_STRENGTH);
             // Now apply the jump vector to the actual velocity
-            player->velocity = dir;
+            player.velocity = dir;
         }
 
         if (IsKeyDown(KEY_SPACE)) {
-            player->jumpHoldTime += delta;
+            player.jumpHoldTime += delta;
         }
         else {
-            player->jumpHoldTime = 0.0f;
+            player.jumpHoldTime = 0.0f;
             if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) {
-                player->velocity.x += PLAYER_SPEED * delta;
-                player->isFacingRight = true;
+                player.velocity.x += PLAYER_SPEED * delta;
+                player.isFacingRight = true;
             }
             if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) {
-                player->velocity.x -= PLAYER_SPEED * delta;
-                player->isFacingRight = false;
+                player.velocity.x -= PLAYER_SPEED * delta;
+                player.isFacingRight = false;
             }
 
             if (IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_D) || IsKeyPressed(KEY_A)) {
-                player->animTime = 0;
+                player.animTime = 0;
             }
         }
     }
     else {
-        player->jumpHoldTime = 0.0f;
+        player.jumpHoldTime = 0.0f;
     }
 
     // Clamp velocity
-    float vel = Vector2Length(player->velocity);
+    float vel = Vector2Length(player.velocity);
     if (vel > 25.0) vel = 25.0;
-    player->velocity = Vector2Scale(Vector2Normalize(player->velocity), vel);
+    player.velocity = Vector2Scale(Vector2Normalize(player.velocity), vel);
 
-    player->position = Vector2Add(player->position, Vector2Scale(player->velocity, delta));
+    player.position = Vector2Add(player.position, Vector2Scale(player.velocity, delta));
 }
 
 void drawSpriteSheetTile(const Texture texture, const int spriteX, const int spriteY, const int spriteSize,
@@ -373,21 +394,23 @@ void drawSpriteSheetTile(const Texture texture, const int spriteX, const int spr
         position, WHITE);
 }
 
-
 // Entry point of the program
 // --------------------------
 int main(int argc, const char** argv) {
     // Initialization
     // --------------
-
+  printf("argc = %d\n", argc);
+    
     const int initialScreenWidth = TILEMAP_SIZE_X * TILE_PIXELS;
     const int initialScreenHeight = TILEMAP_SIZE_Y * TILE_PIXELS;
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    InitWindow(initialScreenWidth * 3, initialScreenHeight * 3, "raylib [core] example - keyboard input");
+    InitWindow(initialScreenWidth * 5, initialScreenHeight * 5, "Jump!");
     SetTargetFPS(60); // Set our game to run at 60 frames-per-second when possible
-    SetExitKey(KEY_NULL);
+    //SetExitKey(KEY_NULL); // Disables ESC key
 
+    InitAudioDevice();      // Initialize audio device
+    
     // Set the Current Working Directory to the .exe folder.
     // This is necesarry for loading files shipped relative to the executable.
     {
@@ -398,9 +421,8 @@ int main(int argc, const char** argv) {
         ChangeDirectory(path);
     }
 
-    bool isDebugEnabled = false;
+    bool isDebugEnabled = true;
 
-    Player player = {};
     player.position = {
         (float)initialScreenWidth / (2 * TILE_PIXELS),
         (float)initialScreenHeight / (2 * TILE_PIXELS) };
@@ -410,6 +432,10 @@ int main(int argc, const char** argv) {
 
     RenderTexture pixelartRenderTexture = LoadRenderTexture(VIEW_PIXELS_X, VIEW_PIXELS_Y);
 
+    jumpWav = LoadSound("jump.wav");
+    bumpWav = LoadSound("bump.wav");
+    floorWav = LoadSound("floor.wav");
+    
     // Main game loop
     // --------------
 
@@ -418,7 +444,7 @@ int main(int argc, const char** argv) {
         const float delta = Clamp(GetFrameTime(), 0.0001f, 0.1f);
 
         int screenIndex = arrayNumItems(screenTilemaps) - getScreenHeightIndex(player.position.y) - 2;
-        if (screenIndex < 0 || screenIndex > arrayNumItems(screenTilemaps)) screenIndex = 0;
+        if (screenIndex < 0 || (size_t)screenIndex > arrayNumItems(screenTilemaps)) screenIndex = 0;
 
         const Tilemap* tilemap = &screenTilemaps[screenIndex % arrayNumItems(screenTilemaps)];
         const int heightIndex = getScreenHeightIndex(player.position.y);
@@ -427,7 +453,7 @@ int main(int argc, const char** argv) {
         // Update
         {
             if (IsKeyPressed(KEY_I)) isDebugEnabled = !isDebugEnabled;
-            updatePlayer(&player, tilemap, screenOffsetY, delta);
+            updatePlayer(tilemap, screenOffsetY, delta);
             resolveBoxCollisionWithTilemap(tilemap, screenOffsetY, &player.position, &player.velocity, PLAYER_SIZE);
 
             // Minimum window size
@@ -515,6 +541,12 @@ int main(int argc, const char** argv) {
                         }
 
                     } break;
+                    case TILE_EMPTY: {
+                        break;
+                    }
+                    case TILE_ZERO: {
+                        break;
+                    }      
                     }
 
                     drawSpriteSheetTile(tilemapTexture, spriteX, spriteY, TILE_PIXELS, { (float)x * TILE_PIXELS, (float)y * TILE_PIXELS });
@@ -618,3 +650,4 @@ int main(int argc, const char** argv) {
 
     return 0;
 }
+
