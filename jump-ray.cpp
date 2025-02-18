@@ -415,8 +415,8 @@ int main(int argc, const char** argv) {
     // This is necesarry for loading files shipped relative to the executable.
     {
         int numSplit = 0;
-        const char** split = TextSplit(argv[0], '\\', &numSplit);
-        const char* path = TextJoin(split, numSplit - 1, "\\");
+        const char** split = (const char **)TextSplit(argv[0], '\\', &numSplit);
+        const char* path = TextJoin((char **)split, numSplit - 1, "\\");
         printf("load path = %s\n", path);
         ChangeDirectory(path);
     }
