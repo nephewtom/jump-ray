@@ -1,15 +1,25 @@
-# Jump Prince
-[Jump King](https://store.steampowered.com/app/1061090/Jump_King/) Clone, written in C/C++ and Raylib, for learning purposes.
+# Jump Ray
+[Jump King](https://store.steampowered.com/app/1061090/Jump_King/) clone, written in C/C++ and Raylib, for learning purposes.
 
 ![gameplay](showcase.gif)
 
-This isn't a full-fledged game, but it's finished.
+## Compiling
+```
+git clone --recurse-submodules https://github.com/nephewtom/jump-ray.git
+cd jump-ray/raylib
+make PLATFORM=PLATFORM_DESKTOP
+cd ..
+```
+### Windows
+```
+build.bat
+```
+### Mac
+```
+build.sh
+```
 
-The source code is as simple as possible, it should be pretty easy to follow.
-There are many comments to explain (briefly) what's going on.
-It could be a pretty good learning resource for people getting into raylib or C/C++ game development in general.
-
-### Features
+## Features
 - Tilemap VS Box collision resolution (position based, clips velocity)
 - Player movement
   - jumping, charging jumps, walking
