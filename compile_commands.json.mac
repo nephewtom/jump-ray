@@ -1,0 +1,31 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-std=c99",
+      "-I",
+      "raylib/src",
+      "-framework",
+      "OpenGL",
+      "-framework",
+      "CoreFoundation",
+      "-framework",
+      "CoreGraphics",
+      "-framework",
+      "IOKit",
+      "-framework",
+      "AppKit",
+      "-Wall",
+      "-Wextra",
+      "-Wno-missing-field-initializers",
+      "-g",
+      "-o",
+      "jump-ray",
+      "jump-ray.c"
+    ],
+    "directory": "/Users/swamiom/playground/jump-ray",
+    "file": "/Users/swamiom/playground/jump-ray/jump-ray.c",
+    "output": "/Users/swamiom/playground/jump-ray/jump-ray"
+  }
+]

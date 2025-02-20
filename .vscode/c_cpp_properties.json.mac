@@ -1,0 +1,31 @@
+{
+  "configurations": [
+    {
+      "name": "Mac",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "/Users/swamiom/playground/jump-ray/raylib/src/**"
+      ],
+      "defines": [],
+      "compilerPath": "/usr/bin/clang",
+      "cStandard": "c11",
+      "cppStandard": "c++14",
+      "intelliSenseMode": "clang-x64",
+      "compilerArgs": [
+        "-Wall",
+        "-Wextra",
+        "-Wno-missing-field-initializers",
+        "-g"
+      ],
+      "browse": {
+        "path": [
+          "${workspaceFolder}/**",
+          "/Users/swamiom/playground/jump-ray/raylib/src/**"
+        ],
+        "limitSymbolsToIncludedHeaders": true,
+        "databaseFilename": ""
+      }
+    }
+  ],
+  "version": 4
+}
