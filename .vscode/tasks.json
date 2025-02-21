@@ -2,38 +2,69 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build Raylib Project",
+            "label": "Build Jump Ray",
             "type": "shell",
-            "command": "C:/mingw-w64/x86_64-8.1.0-win32-seh-rt_v6-rev0/mingw64/bin/g++.exe",
+            "command": "C:/Users/etomort/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/bin/gcc.exe",
             "args": [
-                "${workspaceFolder}/jump-ray.cpp",
-                "-o", "${workspaceFolder}/jump-ray.exe",
-                "-Id:/playground/raylib/src",
-                "-Ld:/playground/raylib/src",
+                "${workspaceFolder}/jump-ray.c",
+                "-o",
+                "${workspaceFolder}/jump-ray.exe",
+                "-Iraylib/src",
+                "-Lraylib/src",
                 "-lraylib",
                 "-lopengl32",
                 "-lgdi32",
                 "-lwinmm",
                 "-Wall",
                 "-Wextra",
-                "-Wno-missing-field-initializers",  // <== Ignore these warnings
+                "-Wno-missing-field-initializers",
                 "-g"
             ],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
-            "problemMatcher": ["$gcc"],
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "detail": "Compiles the Raylib project"
+        },
+        {
+            "label": "Build Test",
+            "type": "shell",
+            "command": "gcc.exe",
+            "args": [
+                "${workspaceFolder}/tile-test.c",
+                "-o",
+                "${workspaceFolder}/tile-test.exe",
+                "-Iraylib/src",
+                "-Lraylib/src",
+                "-lraylib",
+                "-lopengl32",
+                "-lgdi32",
+                "-lwinmm",
+                "-Wall",
+                "-Wextra",
+                "-Wno-missing-field-initializers",
+                "-g"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
             "detail": "Compiles the Raylib project"
         },
         {
             "label": "Run Executable",
             "type": "shell",
-            "command": "${workspaceFolder}/jump-ray.exe", // Path to your .exe
-            "args": [], // Command-line arguments (if any)
+            "command": "${workspaceFolder}/jump-ray.exe",
+            "args": [],
             "group": "none",
             "problemMatcher": [],
             "detail": "Run the compiled executable"
-        }      
+        }
     ]
 }
