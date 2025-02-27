@@ -159,7 +159,7 @@ main(int argc, const char** argv)
   bool isDebugEnabled = true;
 
   // Vector2 initialPosition = { (float)initialScreenWidth / (2 * TILE_PIXELS), (float)initialScreenHeight / (2 * TILE_PIXELS) };
-  Vector2 initialPosition = { 1, 10 };
+  Vector2 initialPosition = { 7, 10 };
   player.position = initialPosition;
 
   Texture playerTexture = LoadTexture("player.png");

@@ -175,20 +175,6 @@ const Tilemap LEVEL2 = {
     "##    ##########",
 };
 
-const Tilemap TEST_LEVEL = {
-    "##     #########",
-    "####          ##",
-    "######        ##",
-    "#########      #",
-    "###########    #",
-    "##             #",
-    "##            ##",
-    "#           ####",
-    "#         ######",
-    "#       ########",
-    "      ##########",
-    "################",
-};
 const Tilemap START_SCREEN = {
     "##    ##########",
     "##            ##",
@@ -201,6 +187,21 @@ const Tilemap START_SCREEN = {
     "#         ######",
     "#####     ######",
     "#####     ######",
+    "################",
+};
+
+const Tilemap TEST_LEVEL = {
+    "##     #########",
+    "####          ##",
+    "######        ##",
+    "#########      #",
+    "###########    #",
+    "##             #",
+    "##            ##",
+    "#           ####",
+    "#         ######",
+    "#       ########",
+    "      ##########",
     "################",
 };
 
@@ -298,15 +299,17 @@ void freeTilemaps(Tilemap* tilemaps) {
 }
 
 Tilemap *mainTilemap;
-size_t numOfLevels = 3;
+size_t numOfLevels = 5;
 
 Tilemap* createTilemap(size_t nLevels) {
 
   Tilemap* tilemap = allocateTilemaps(nLevels);
 
-  insertLevelInMap(&LEVEL3, tilemap, 0);
-  insertLevelInMap(&LEVEL2, tilemap, 1);
-  insertLevelInMap(&FLAT_LEVEL, tilemap, 2);
+  insertLevelInMap(&FINAL_SCREEN, tilemap, 0);
+  insertLevelInMap(&LEVEL4, tilemap, 1);
+  insertLevelInMap(&LEVEL3, tilemap, 2);
+  insertLevelInMap(&LEVEL2, tilemap, 3);
+  insertLevelInMap(&START_SCREEN, tilemap, 4);
   /* insertLevelInMap(&START_SCREEN, tilemap, 2); */
 
   return tilemap;
